@@ -1,40 +1,311 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
 
-		<title>reveal.js</title>
+    <title>reveal.js</title>
 
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css">
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/solarized.css" />
+    <style type="text/css">
+      p { text-align: left; }
+      </style>
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h2>Functional Mockup Interface in Unreal Engine 4</h2>
+          <br>
+          <h5>Chair of Mechatronics - University Augsburg</h5>
+          <h6>Benjamin Ritter</h6>
+          <h6>Supervisor: Lennart Luttkus</h6>
+          <br>
+          <h6>07.07.2021</h6>
+          
+        </section>
+        <section
+          data-background-image="https://raw.githubusercontent.com/modelica/MA-Logos/master/HighRes/FMI.svg"
+          data-background-size="25%"
+          data-background-position="bottom 5% left 5%"
+          data-background-opacity="0.1"
+        >
+          <section>
+            <h5>FMI</h5>
+              <p>Open exchange format for dynamic systems</p>
+              <p>Wide industry support</p>
+              <p>Two sub-standards: Co-Simulation and Model Exchange</p>
 
-		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+          </section>
+          <section>
+            <h5>Structure</h5>
+            <p>Zip compressed file</p>
+            <p>modelDescription.xml</p>
+            <p>
+              dynamic lib(s) with FMI conformant interface and/or source
+              code (no reflection)
+            </p>
+          </section>
+          <section>
+            <h5>Working across platforms</h5>
+            <p>the dynamic library is platform specific</p>
+            <p>source code inclusion is not neccesary (security by obscurity)</p
+            <p>
+              some tools (e.g. Dymola) need special license for source code
+              export and don't support cross-compiling
+            </p>
+            <p>Results in platform lock-in</p>
+            <p>Possible solution: <a href="https://github.com/taviso/loadlibrary"> taviso/loadlibrary </a></p>
+          </section>
+          <section><h5>Workflow</h5>
+          <p>OpenModelica</p>
+        <p>Linux native FMUs</p>
+        <p>Recompiling of source FMUs with  <a href="https://github.com/CATIA-Systems/FMPy">CATIA-Systems/FMPy</a></p>
+      </section>
+        </section>
+        <section
+          data-background-image="https://raw.githubusercontent.com/carla-simulator/carla-simulator.github.io/master/img/logo/carla-black.png"
+          data-background-size="25%"
+          data-background-position="bottom 5% left 0%"
+          data-background-opacity="0.2"
+        >
+            <p>"Open-source simulator for autonomous driving research"</p>
+            <p>Client-Server (Server runs UE4 as simulation backend)</p>
+            <p>APIs (python, Cpp, RobotOS, CarSim</p>
+            <p>World and Vehicles need to be present in the server</p>
+            <p>Running only on UE4.24</p>
+        </section>
+        <section>
+          <section>
+            <h1>GOAL: Simulate FMUs in CARLA</h1>
+            <p>Enables usage of industry standard tools</p>
+          </section>
+          <section>
+            <h5>Multiple angles of attack</h5>
+            <ol>
+              <li>
+                ROS-Bridge: Not suitable since physics is not exposed
+              </li>
+              <li>Python API: like 1</li>
+              <li>Run as part of the vehicle Actor in UE4</li>
+            </ol>
+          </section>
+          <section>UE4 crashcourse</section>
+          <section>
+            <h5>Actors</h5>
+            Things that can be spawned and have logic. Composed out of
+            ActorComponents. Most™ interactables are actors
+          </section>
+          <section>
+            <h5>ActorComponents</h5>
+            Reuseable functional components for actors.
+            <img src="img/Components.png" />
+          </section>
+          <section>
+            <h5>Writing Code for UE4</h5>
+            <p>Two Systems for writing code: C++ and Blueprint Visual Script.</p>
+            <p>C# in the build system.</p>
+            <p>Actor Components must be written in C++</p>
+          </section>
+          <section>
+            <h5>Writing C++ in UE4</h5>
+            <p>Custom build system (Unreal Build Tool)</p>
+            <p>
+              Very different from std C++ (Garbage Collected, custom primitives (e.g. std::string and FString)
+            </p>
+            <p>
+              Platform portable as long as only UE modules are used
+            </p>
+            <p>Recompiling at runtime through a reflection framework</p>
+            <p>In 4.24: Old compiler on linux with only C++14 support (Clang 8)</p>
+          </section>
+        </section>
+        <section>
+          <h5>Possible Architectures for FMU executors</h5>
+          <ol>
+            <li>In-Process</li>
+            <li>External binary</li>
+            <li>via Remote Procedure Calls</li>
 
-		<script src="dist/reveal.js"></script>
-		<script src="plugin/notes/notes.js"></script>
-		<script src="plugin/markdown/markdown.js"></script>
-		<script src="plugin/highlight/highlight.js"></script>
-		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
-			Reveal.initialize({
-				hash: true,
+          </ol>
+        </section>
+        <section>
+          <h5>UnrealEngine-FMIPlugin</h5>
+          <p>Existing Proof of Concept for FMI in UE4</p>
+          <p>Limited functionality (non programmable behaviour)</p>
+          <p>Win64 only</p>
+          <p>Dependencies linked as binaries</p>
 
-				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
-			});
-		</script>
-	</body>
+          <footer>
+            <a href="https://github.com/ORNL-Modelica/UnrealEngine-FMIPlugin"
+              >src</a
+            >
+          </footer>
+        </section>
+        <section>
+          <h5>Dependency Hell</h5>
+          <p>two dependencies: zlib libzip (later also elzip)</p>
+          <p>zlib is available in UE4 as native lib</p>
+          <p>libzip is not</p>
+          <p>Solution: Build the dependencies with conan-ue4</p>
+        </section>
+        <section>
+          <h5>Step 1: Putting out fires</h5>
+          <p>Substitute the libraries</p>
+          <p>Implicit pointer dereferencing in MSCV</p>
+          <p>Compile - Fix - Try Again</p>
+          <p>At some point it compiled.</p>
+        </section>
+        <section
+        data-background-image="https://avatars.githubusercontent.com/u/3490860?v=4"
+        data-background-size="25%"
+        data-background-position="bottom 0% left 0%"
+        data-background-opacity="0.1" >
+          <h5>conan-ue4</h5>
+          <p>Created by Dr. Adam Rehn</p>
+          <p>Integrates the Conan Build System into UBT</p>
+          <p>Based around so called Recepies</p>
+          <p>Wrote recepies for elzip and libzip</p>
+          <footer>
+            <table>
+              <tr>
+                <th>
+                  <a href="https://github.com/adamrehn/conan-ue4cli"
+                    >conan-ue4cli</a
+                  >
+                </th>
+                <th>
+                  <a href="https://github.com/l0wl3vel/ue4-conan-recipes"
+                    >My conan recepies</a
+                  >
+                </th>
+              </tr>
+            </table>
+          </footer>
+        </section>
+        <section>
+          <section>
+            <h5>Step 2: How to unzip a file</h5>
+            <p>
+              Original project: unzipper.hpp borrowed without credit from
+              <a
+                href="https://github.com/NTNU-IHB/FMI4cpp/blob/master/src/fmi4cpp/tools/unzipper.hpp"
+                >FMI4cpp</a
+              >
+            </p>
+            <p>
+              Problem: relies either on C++17 or
+              &#60;experimental/filesystem&#62; headers
+            </p>
+          </section>
+          <section>
+            <h5>Try 1: unzipper.hpp</h5>
+            <p>C++14 and no &#60;experimental/filesystem&#62;</p>
+            <p>
+              Compiler flag to enable &#60;experimental/filesystem&#62; is not
+              exposed in UBT
+            </p>
+            <p>=>Dead End</p>
+          </section>
+          <section>
+            <h5>Try 2: elzip</h5>
+            <p>Simple Unzip library</p>
+            <p>
+              When using the filesystem fallback folders fail to get created
+            </p>
+            <p>
+              Either fork and redo their fallback FS implementation or move on
+            </p>
+            <p>=>Too much work for uncertain result</p>
+            <footer>
+              <a href="https://github.com/Sygmei/11Zip">11Zip</a>
+            </footer>
+          </section>
+          <section>
+            <h5>Try 3: Just call /usr/bin/unzip</h5>
+            <p>Implement a platform specific workaround for Linux64 and UE4</p>
+            <pre><code data-trim data-noescape>
+              if (UGameplayStatics::GetPlatformName() == "LINUX")
+              {
+                FString unzipCommandArgs = FString::Printf(TEXT("-uo %s -d %s"), *tempFmuPath, *tempTargetPath);
+                UE_LOG(FMUSetup, Display, TEXT("Extraction command: %s"), *unzipCommandArgs);
+            
+                FUnixPlatformProcess::ExecProcess(TEXT("/usr/bin/unzip"), *unzipCommandArgs, 0, 0, 0);
+              }
+              else
+              {
+                UE_LOG(FMUSetup, Warning, TEXT("Platform is not LINUX, using elzip to extract FMU"));
+                elz::extractZip(std::string(TCHAR_TO_UTF8(*tempFmuPath)), std::string(TCHAR_TO_UTF8(*tempTargetPath)));
+              }</code></pre>
+              <h4>This is BAD and only a workaround for the old UE version</h4>
+          </section>
+          <section>
+            <h5>FMU extraction caching</h5>
+            <p>
+              FMUs get extracted on every execution start and FMU path change
+            </p>
+            <p>Extracting unchanged FMUs is a waste of time</p>
+            <p>
+              Solution: Check the FMUs' "changed" timestamp and check if a
+              folder with the format {FMU filename}.{Unix timestamp} exists in
+              the directory
+            </p>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h5>Step 3: Running an FMU</h5>
+            <p>Example: Suspension with force-based coupling</p>
+            <video loop data-autoplay src="img/Suspension.webm"></video>
+          </section>
+          <section          
+          data-background-image="img/Force Coupling.png"
+          data-background-size="100%"
+          data-background-opacity="1">
+          </section>
+        </section>
+        <section>
+          <h5>Results</h5>
+          <p>Execute Co-Simulation FMUs in UE4</p>
+          <p>Ship in "game" executables</p>
+          <p>Build system with possibility for other platforms</p>
+        </section>
+        <section>
+          <h5>Future</h5>
+          <p>Async execution</p>
+          <p>Validate for other platforms</p>
+          <p>FMI conformance test suite</p>
+          <p>Better Blueprint typing</p>
+          <p>Open Sourcing (Currently blocked by licensing; contact me for repo access)</p>
+        </section>
+        <section>
+          <h3>Thank you for your attention</h3>
+          <h5>Questions, Source access etc.</h5>
+          <a href="mailto:benjamin.ritter@student.uni-augsburg.de">benjamin.ritter@student.uni-augsburg.de</a>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
 </html>
